@@ -22,7 +22,7 @@ angle_scores = {"thumb": [[], [], []], "index": [[], [], []], "middle": [[], [],
 distance_scores = {"thumb": [], "index": [], "middle": [], "ring": [], "pinky": []}
 constraints = {}
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 detector = HandDetector(detectionCon=0.9, maxHands=2)
 
 while True:
