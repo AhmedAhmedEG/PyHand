@@ -45,7 +45,7 @@ if not os.path.isfile("data/constraints.pkl"):
 with open("data/constraints.pkl", 'rb') as f:
     constraints = pickle.load(f)
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 detector = HandDetector(detectionCon=0.95, maxHands=2)
 
 previous_l_hand_curls = [0] * 15
