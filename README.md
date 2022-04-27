@@ -5,6 +5,10 @@ Plot Scores.py : Draws scatter plots for the angles of all your joints that was 
 
 VRHand.py : the main script, it visualizes and tracks your hand and talks directly to OpenGloves driver via NamedPipes.
 
+PyCurls.py : It holds all functions that are responsible for angle calculation and visualization.
+
+IPC.py : It hold the code used to send data to OpenGloves's NamedPipe.
+
 # Requirements
 Python 3.7+
 
@@ -12,7 +16,7 @@ pip install matplotlib numpy mediapipe cvzone
 
 OpenGloves driver installed
 
-# Note
+# Notes
 Change the camera index in the scripts you want to use if your camera didn't work with them.
 
 In the main VRHand.py, you can change the "joints" parameter in the "encode_curls()" function to 3 to get the real 3 angles per finger but it's not accurate currently, so you can better stick with 2 for now, this will make the 1nd and the 2nd joint angles the same per finger.
