@@ -19,6 +19,9 @@ In the main VRHand.py, you can change the "joints" parameter in the "encode_curl
 
 # Future Plans
 Splay Calculation.
+
 Orientation Calculation.
+
 Using quaternions to calculate angles for better accuracy and avoiding gimble locks.
+
 Either modding the OpenGloves driver to accept positional data or simulating a virual vive tracker and send positional data from it.
