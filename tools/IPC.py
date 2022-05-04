@@ -10,6 +10,8 @@ import win32con
 import win32file
 import win32pipe
 
+from Calculations import scale
+
 
 def encode(curls, splays, joys, bools):
     """ Struct format is from: https://github.com/LucidVR/opengloves-driver/wiki/Driver-Input#opengloves-input-methods
@@ -28,9 +30,8 @@ def encode(curls, splays, joys, bools):
     
     const float trgValue; // between 0 - 1 
     """
-
     if splays is None:
-        splays = [0.0] * 5
+        splays = [scale(np.mean(f), 0, 1, -1, 1) for f in zip(curls[0::4], curls[1::4], curls[2::4], curls[3::4])]
 
     if joys is None:
         joys = [0.0] * 2
@@ -101,8 +102,7 @@ if __name__ == "__main__":
                     for i4 in values:
 
                         for i5 in values:
-                            # curls = [i1, i1, i1, i1, i2, i2, i2, i2, i3, i3, i3, i3, i4, i4, i4, i4, i5, i5, i5, i5]
-                            curls = [0.0] * 20
+                            curls = [i1, i1, i1, i1, i2, i2, i2, i2, i3, i3, i3, i3, i4, i4, i4, i4, i5, i5, i5, i5]
                             splays = [i1, i2, i3, i4, i5]
 
                             ipc_left.send(curls, splays=splays)

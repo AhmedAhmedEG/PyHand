@@ -1,61 +1,72 @@
-from cvzone.HandTrackingModule import HandDetector
-from tools.PyCurl import *
-import atexit
+from tools.HandTrackingModule import *
+from tools.Calculations import *
+from datetime import datetime
+from scipy.stats import stats
+import cvzone
 import pickle
 import cv2
 
+curl_scores = {"thumb": [[], [], []], "index": [[], [], []], "middle": [[], [], []], "ring": [[], [], []], "pinky": [[], [], []]}
+splay_scores = {"thumb": [], "index": [], "middle": [], "ring": [], "pinky": []}
+constraints = {"curls": {}, "splays": {}}
 
-def finish():
-    cap.release()
-    cv2.destroyAllWindows()
+cap = cv2.VideoCapture(1)
+detector = HandDetector(detectionCon=0.8, minTrackCon=0.8, maxHands=1)
+testing = False
 
-    with open("data/constraints.pkl", "wb") as f:
-        pickle.dump(constraints, f)
-
-    with open("data/angle_scores.pkl", "wb") as f:
-        pickle.dump(angle_scores, f)
-
-
-atexit.register(finish)
-
-angle_scores = {"thumb": [[], [], []], "index": [[], [], []], "middle": [[], [], []], "ring": [[], [], []], "pinky": [[], [], []]}
-distance_scores = {"thumb": [], "index": [], "middle": [], "ring": [], "pinky": []}
-constraints = {}
-
-cap = cv2.VideoCapture(0)
-detector = HandDetector(detectionCon=0.9, maxHands=2)
-
+previous_time = datetime.now()
 while True:
-    success, frame = cap.read()
+    _, frame = cap.read()
     hands, frame = detector.findHands(frame)
 
     if hands:
 
         for h in hands:
-            angles = get_curls_using_angles(h)
-            frame = draw_angles(frame, h)
+            points = np.array(h["lmList"])
+            curls = calc_curls(points)
+            splays = calc_splays(points)
 
-            for key, i, j, k in zip(angle_scores.keys(), angles[0::3], angles[1::3], angles[2::3]):
-                angle_scores[key][0].append(i)
-                angle_scores[key][1].append(j)
-                angle_scores[key][2].append(k)
+            curls_frame = draw_curls(frame, points, fingers=[1, 1, 1, 1, 1])
+            splays_frame = draw_splays(frame, points, fingers=[1, 1, 1, 1, 1])
 
-        for k in angle_scores.keys():
+            for key, i, j, k in zip(curl_scores.keys(), curls[0::3], curls[1::3], curls[2::3]):
+                curl_scores[key][0].append(i)
+                curl_scores[key][1].append(j)
+                curl_scores[key][2].append(k)
 
-            constraints[k] = []
-            for i in angle_scores[k]:
-                mn, mx = min(i), max(i)
-                constraints[k].append([mn, mx])
+            for key, i in zip(splay_scores.keys(), splays):
+                splay_scores[key].append(i)
 
-        # for h in hands:
-        #     distances = get_curls_using_distances(h, detector)
-        #
-        #     for i, k in enumerate(distance_scores.keys()):
-        #         distance_scores[k].append(distances[i])
-        #
-        # for k in distance_scores.keys():
-        #     mn, mx = min(distance_scores[k]), max(distance_scores[k])
-        #     constrains[k] = [mn, mx]
+        if not testing and (datetime.now() - previous_time).seconds > 10:
+            cap.release()
+            cv2.destroyAllWindows()
 
-    cv2.imshow("Image", frame)
+            for k in curl_scores.keys():
+                constraints["curls"][k] = []
+
+                for i in curl_scores[k]:
+                    z = np.abs(stats.zscore(i))
+                    i = np.array(i)[z < 0.6]
+                    mn, mx = min(i, default=0), max(i, default=0)
+                    constraints["curls"][k].append([mn, mx])
+
+            for k in splay_scores.keys():
+                i = splay_scores[k]
+                z = np.abs(stats.zscore(i))
+                i = np.array(i)[z < 0.6]
+                mn, mx = min(i, default=0), max(i, default=0)
+                constraints["splays"][k] = [mn, mx]
+
+            with open("data/constraints.pkl", "wb") as f:
+                pickle.dump(constraints, f)
+
+            with open("data/curl_scores.pkl", "wb") as f:
+                pickle.dump(curl_scores, f)
+
+            with open("data/splay_scores.pkl", "wb") as f:
+                pickle.dump(splay_scores, f)
+
+        frame = cvzone.stackImages([curls_frame, splays_frame], cols=2, scale=1)
+
+    cv2.imshow("Curls", frame)
     cv2.waitKey(1)
