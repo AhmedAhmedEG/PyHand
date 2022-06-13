@@ -1,3 +1,8 @@
+# Showcase
+https://youtu.be/1QPYxjOY-OM Hand Tracking Test
+
+https://youtu.be/4GuKdKJ5FPI Hand Calibration Test
+
 # Included Files
 Calibration.py : You run this first, put your hand(s) in front of the camera until it detects it and keep flexing your fingers a couple of times, It will visualize and collect info about the max/min angles of all your curl and splay angles and save it in a file for correct scaling for OpenGloves driver input.
 
@@ -33,7 +38,3 @@ Orientation Calculation.
 Using quaternions to calculate angles for better accuracy and avoiding gimble locks.
 
 Either modding the OpenGloves driver to accept positional data or simulating a virual vive tracker and send positional data from it.
-
-https://youtu.be/1QPYxjOY-OM
-
-https://youtu.be/4GuKdKJ5FPI
